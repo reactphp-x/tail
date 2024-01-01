@@ -1,0 +1,19 @@
+{
+    "name": "reactphp-framework/tail",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Reactphp\\Framework\\Tail\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "wpjscc",
+            "email": "wpjscc@gmail.com"
+        }
+    ],
+    "require": {
+        "react/stream": "^1.3",
+        "symfony/finder": "^7.0"
+    }
+}
