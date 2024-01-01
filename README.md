@@ -3,7 +3,7 @@
 ## install
 
 ```
-composer require reactphhp-framework -vvv
+composer require reactphp-framework/tail -vvv
 ```
 
 ## Usage
