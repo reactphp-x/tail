@@ -37,6 +37,28 @@ $tail->on('data', function ($data) {
 $tail->on('end', function ($file) {
 });
 ```
+## dependencies
+
+extention: [inotify](https://www.php.net/manual/zh/function.inotify-init.php)
+
+## inotify listen file limit
+
+see
+```
+cat /proc/sys/fs/inotify/max_user_instances
+```
+
+edit 
+```
+vi /etc/sysctl.conf
+fs.inotify.max_user_instances = 65532
+```
+take effect
+
+```
+sysctl -p
+```
+
 
 # License
 MIT
