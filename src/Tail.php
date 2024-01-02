@@ -10,6 +10,9 @@ use Symfony\Component\Finder\Finder;
 class Tail extends EventEmitter
 {
     protected $files = [];
+    protected $deleteFiles = [];
+
+    protected $paths = [];
 
     protected $fileToFd = [];
 
@@ -27,9 +30,25 @@ class Tail extends EventEmitter
         if (!isset($this->files[$file])) {
             $this->files[$file]['size'] = filesize($file);
         }
+        unset($this->deleteFiles[$file]);
+        Loop::futureTick(function () use ($file) {
+            $this->tailFile($file);
+        });
+        return $this;
     }
 
-    public function addPath($path, $names = [])
+    public function addPath($path, $names = [], $tick = false)
+    {
+
+        $this->paths[] = [
+            'path' => $path,
+            'names' => $names,
+        ];
+        $this->scanPath($path, $names);
+        return $this;
+    }
+
+    protected function scanPath($path, $names)
     {
         $finder = new Finder();
 
@@ -40,6 +59,9 @@ class Tail extends EventEmitter
         }
 
         foreach ($finder as $file) {
+            if (in_array($file->getRealPath(), $this->deleteFiles)) {
+                continue;
+            }
             $this->addFile($file->getRealPath());
         }
     }
@@ -48,11 +70,14 @@ class Tail extends EventEmitter
     {
         $this->removeTailFd($file);
         unset($this->files[$file]);
+        $this->deleteFiles[$file] = $file;
+        return $this;
     }
 
     public function setLastLine($lastLine)
     {
         $this->lastLine = $lastLine;
+        return $this;
     }
 
     public function setTick($tick)
@@ -60,6 +85,15 @@ class Tail extends EventEmitter
         $this->tick = $tick;
     }
 
+    protected function tick()
+    {
+        foreach ($this->paths as $path) {
+            $this->scanPath($path['path'], $path['names']);
+        }
+        foreach ($this->files as $path => $value) {
+            $this->tailFile($path, $value['size']);
+        }
+    }
 
     public function start()
     {
@@ -70,9 +104,7 @@ class Tail extends EventEmitter
         $this->status = 1;
 
         $this->tickTimer = Loop::addPeriodicTimer($this->tick, function () {
-            foreach ($this->files as $path => $value) {
-                $this->tailFile($path, $value['size']);
-            }
+            $this->tick();
         });
     }
 
@@ -105,7 +137,6 @@ class Tail extends EventEmitter
             $fd = $this->getFileFd($file);
             $watch_descriptor = $this->getFileFdWatchDescriptor($file);
             unset($this->fileToFd[$file]);
-            $this->removeFile($file);
             Loop::removeReadStream($fd);
             inotify_rm_watch($fd, $watch_descriptor);
             @fclose($fd);
@@ -291,6 +322,11 @@ class Tail extends EventEmitter
     {
         foreach ($this->fileToFd as $file => $fd) {
             $this->removeFile($file);
+        }
+
+        if ($this->tickTimer) {
+            Loop::cancelTimer($this->tickTimer);
+            $this->tickTimer = null;
         }
     }
 }
