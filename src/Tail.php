@@ -1,6 +1,6 @@
 <?php
 
-namespace Reactphp\Framework\Tail;
+namespace ReactphpX\Tail;
 
 use Evenement\EventEmitter;
 

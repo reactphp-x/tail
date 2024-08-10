@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Reactphp\Framework\Tail\Tail;
+use ReactphpX\Tail\Tail;
 
 $tail = new Tail;
 

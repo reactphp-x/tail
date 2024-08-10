@@ -1,9 +1,9 @@
 {
-    "name": "reactphp-framework/tail",
+    "name": "reactphp-x/tail",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Reactphp\\Framework\\Tail\\": "src/"
+            "ReactphpX\\Tail\\": "src/"
         }
     },
     "authors": [
